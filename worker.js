@@ -18,6 +18,7 @@ export default {
         headers: Object.fromEntries(request.headers),
         cf: request.cf || {}
       };
+      console.log('API 请求: ', response);
 
       // Return JSON response
       return new Response(JSON.stringify(response, null, 2), {
@@ -47,6 +48,7 @@ export default {
       response.headers.set('Cache-Control', 'public, max-age=14400'); // 4小时缓存
       return response;
     } catch (error) {
+      console.error('处理静态资源请求时出错', error);
       return new Response('Internal Server Error', { status: 500 });
     }
   }
