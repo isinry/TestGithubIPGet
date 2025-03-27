@@ -23,8 +23,17 @@ export default {
         const ipInfoResponse = await fetch(`https://ipinfo.io/${clientIP}/json`);
         const ipInfo = await ipInfoResponse.json();
 
-        // Create response object with IP information
-        const response = ipInfo;
+        // 获取请求头信息
+        const headers = {};
+        for (const [key, value] of request.headers.entries()) {
+          headers[key] = value;
+        }
+
+        // Create response object with IP information and headers
+        const response = {
+          ...ipInfo,
+          request_headers: headers
+        };
         const responseBody = JSON.stringify(response, null, 2);
         console.log(`[${formatTime()}] API 请求: `, responseBody);
 
