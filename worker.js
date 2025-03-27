@@ -1,5 +1,12 @@
 export default {
   async fetch(request, env, ctx) {
+    // 添加格式化时间的辅助函数
+    const formatTime = () => {
+      const d = new Date();
+      d.setHours(d.getHours() + 8); // 转换为北京时间 (UTC+8)
+      return d.toISOString().replace('Z', '+08:00');
+    };
+
     const url = new URL(request.url);
 
     // 处理 API 请求（支持根路径和 /api/github-ip）
@@ -19,7 +26,7 @@ export default {
         // Create response object with IP information
         const response = ipInfo;
         const responseBody = JSON.stringify(response, null, 2);
-        console.log('API 请求: ', responseBody);
+        console.log(`[${formatTime()}] API 请求: `, responseBody);
 
         // Return JSON response
         return new Response(responseBody, {
@@ -29,7 +36,7 @@ export default {
           }
         });
       } catch (error) {
-        console.error('获取 IP 信息时出错:', error);
+        console.error(`[${formatTime()}] 获取 IP 信息时出错:`, error);
         return new Response(JSON.stringify({
           error: 'Failed to fetch IP information',
           message: error.message,
