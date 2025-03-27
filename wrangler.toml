@@ -1,0 +1,6 @@
+name = "ip-getter"
+main = "worker.js"
+compatibility_date = "2025-03-27"
+
+[site]
+bucket = "./public" 
