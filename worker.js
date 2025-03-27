@@ -3,7 +3,7 @@ export default {
     const url = new URL(request.url);
 
     // 处理 API 请求（支持根路径和 /api/github-ip）
-    if (url.pathname === '/' || url.pathname === '/api/github-ip') {
+    if (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/api/github-ip') {
       // Get the client's IP address
       const clientIP = request.headers.get('CF-Connecting-IP') || 
                       request.headers.get('X-Forwarded-For') || 
@@ -17,17 +17,12 @@ export default {
         const ipInfo = await ipInfoResponse.json();
 
         // Create response object with IP information
-        const response = {
-          ip: clientIP,
-          timestamp: new Date().toISOString(),
-          headers: Object.fromEntries(request.headers),
-          cf: request.cf || {},
-          ipInfo: ipInfo
-        };
-        console.log('API 请求: ', response);
+        const response = ipInfo;
+        const responseBody = JSON.stringify(response, null, 2);
+        console.log('API 请求: ', responseBody);
 
         // Return JSON response
-        return new Response(JSON.stringify(response, null, 2), {
+        return new Response(responseBody, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
