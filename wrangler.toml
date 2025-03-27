@@ -2,14 +2,5 @@ name = "ip-getter"
 main = "worker.js"
 compatibility_date = "2025-03-27"
 
-# 静态资源配置
-[site]
-bucket = "./public"
-
-# 资源绑定配置
-[[assets]]
-binding = "ASSETS"
-bucket = "./public"
-
 [observability.logs]
 enabled = true
