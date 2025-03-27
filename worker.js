@@ -29,10 +29,22 @@ export default {
           headers[key] = value;
         }
 
+        // 获取访问来源信息
+        const sourceInfo = {
+          referer: request.headers.get('Referer') || 'Direct',
+          userAgent: request.headers.get('User-Agent') || 'Unknown',
+          origin: request.headers.get('Origin') || 'Unknown',
+          country: request.cf?.country || 'Unknown',
+          city: request.cf?.city || 'Unknown',
+          continent: request.cf?.continent || 'Unknown',
+          timezone: request.cf?.timezone || 'Unknown'
+        };
+
         // Create response object with IP information and headers
         const response = {
           ...ipInfo,
-          request_headers: headers
+          request_headers: headers,
+          source_info: sourceInfo
         };
         const responseBody = JSON.stringify(response, null, 2);
         console.log(`[${formatTime()}] API 请求: `, responseBody);
