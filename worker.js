@@ -4,22 +4,48 @@ export default {
 
     // 处理 API 请求（支持根路径和 /api/github-ip）
     if (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/api/github-ip') {
-      // Get the client's IP address
-      const clientIP = request.headers.get('CF-Connecting-IP') || 
-                      request.headers.get('X-Forwarded-For') || 
-                      request.headers.get('X-Real-IP') ||
-                      request.cf?.ip || 
-                      'Unknown';
+      // Get the client's IP address and log all possible IP sources
+      const cfConnectingIP = request.headers.get('CF-Connecting-IP');
+      const xForwardedFor = request.headers.get('X-Forwarded-For');
+      const xRealIP = request.headers.get('X-Real-IP');
+      const cfIP = request.cf?.ip;
+
+      console.log('IP Sources:', {
+        'CF-Connecting-IP': cfConnectingIP,
+        'X-Forwarded-For': xForwardedFor,
+        'X-Real-IP': xRealIP,
+        'CF.ip': cfIP
+      });
+
+      // 优先使用 CF-Connecting-IP
+      const clientIP = cfConnectingIP || xForwardedFor || xRealIP || cfIP || 'Unknown';
+      console.log('Selected IP:', clientIP);
 
       try {
         // 获取 IP 详细信息
-        const ipInfoResponse = await fetch(`https://ipinfo.io/${clientIP}/json`);
+        const ipInfoURL = `https://ipinfo.io/${clientIP}/json`;
+        console.log('Requesting IP info from:', ipInfoURL);
+        
+        const ipInfoResponse = await fetch(ipInfoURL);
         const ipInfo = await ipInfoResponse.json();
+        console.log('IP Info Response:', ipInfo);
 
-        // Create response object with IP information
-        const response = ipInfo;
+        // 创建包含所有信息的响应对象
+        const response = {
+          ...ipInfo,
+          debug: {
+            originalIP: clientIP,
+            headers: {
+              'CF-Connecting-IP': cfConnectingIP,
+              'X-Forwarded-For': xForwardedFor,
+              'X-Real-IP': xRealIP
+            },
+            cf: request.cf || {}
+          }
+        };
+
         const responseBody = JSON.stringify(response, null, 2);
-        console.log('API 请求: ', responseBody);
+        console.log('Final Response:', responseBody);
 
         // Return JSON response
         return new Response(responseBody, {
@@ -33,6 +59,15 @@ export default {
         return new Response(JSON.stringify({
           error: 'Failed to fetch IP information',
           message: error.message,
+          debug: {
+            originalIP: clientIP,
+            headers: {
+              'CF-Connecting-IP': cfConnectingIP,
+              'X-Forwarded-For': xForwardedFor,
+              'X-Real-IP': xRealIP
+            },
+            cf: request.cf || {}
+          },
           timestamp: new Date().toISOString()
         }, null, 2), {
           status: 500,
