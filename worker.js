@@ -11,22 +11,42 @@ export default {
                       request.cf?.ip || 
                       'Unknown';
 
-      // Create response object with IP information
-      const response = {
-        ip: clientIP,
-        timestamp: new Date().toISOString(),
-        headers: Object.fromEntries(request.headers),
-        cf: request.cf || {}
-      };
-      console.log('API 请求: ', response);
+      try {
+        // 获取 IP 详细信息
+        const ipInfoResponse = await fetch(`https://ipinfo.io/${clientIP}/json`);
+        const ipInfo = await ipInfoResponse.json();
 
-      // Return JSON response
-      return new Response(JSON.stringify(response, null, 2), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+        // Create response object with IP information
+        const response = {
+          ip: clientIP,
+          timestamp: new Date().toISOString(),
+          headers: Object.fromEntries(request.headers),
+          cf: request.cf || {},
+          ipInfo: ipInfo
+        };
+        console.log('API 请求: ', response);
+
+        // Return JSON response
+        return new Response(JSON.stringify(response, null, 2), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      } catch (error) {
+        console.error('获取 IP 信息时出错:', error);
+        return new Response(JSON.stringify({
+          error: 'Failed to fetch IP information',
+          message: error.message,
+          timestamp: new Date().toISOString()
+        }, null, 2), {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
     }
 
     // 对于其他请求，返回 404
